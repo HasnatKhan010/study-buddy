@@ -1,4 +1,4 @@
-"""Generate the Aster launcher icons from the same teal-and-sun mark as the app."""
+"""Generate the Study Buddy launcher icons from the app's teal sun mark."""
 
 from math import cos, pi, sin
 from pathlib import Path

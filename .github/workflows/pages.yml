@@ -1,4 +1,4 @@
-name: Deploy Aster Study
+name: Deploy Study Buddy
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
       - name: Run tests
         run: flutter test
       - name: Build site
-        run: flutter build web --release --base-href /aster-study/ --no-wasm-dry-run
+        run: flutter build web --release --base-href /study-buddy/ --no-wasm-dry-run
       - name: Disable Jekyll processing
         run: touch build/web/.nojekyll
       - name: Upload site

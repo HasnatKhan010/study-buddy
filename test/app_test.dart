@@ -1,5 +1,5 @@
-import 'package:aster_study/main.dart';
-import 'package:aster_study/planner.dart';
+import 'package:study_buddy/main.dart';
+import 'package:study_buddy/planner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
@@ -16,7 +16,7 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
     final planner = Planner();
-    await tester.pumpWidget(AsterApp(planner: planner));
+    await tester.pumpWidget(StudyBuddyApp(planner: planner));
     expect(tester.takeException(), isNull, reason: 'Plan screen must fit');
 
     expect(find.text('Make today count.'), findsOneWidget);
@@ -56,5 +56,61 @@ void main() {
     );
     expect(find.text('Read chapter 4'), findsOneWidget);
     expect(find.byType(Card), findsWidgets);
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -250));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Read chapter 4'));
+    await tester.pumpAndSettle();
+    expect(find.text('FOCUS TIMER'), findsOneWidget);
+    expect(find.text('30:00'), findsOneWidget);
+    expect(tester.takeException(), isNull, reason: 'Timer screen must fit');
+  });
+
+  testWidgets('quotes rotate and the focus timer can pause and finish', (
+    tester,
+  ) async {
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty();
+    final planner = Planner();
+    planner.addTask('Practice layouts', Subject.coding, 1);
+    final task = planner.tasks.single;
+    await tester.pumpWidget(StudyBuddyApp(planner: planner));
+
+    expect(
+      find.text('Big goals are tiny tasks in a trench coat.'),
+      findsOneWidget,
+    );
+    await tester.pump(const Duration(seconds: 10));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Study now. Let your pillow be proud later.'),
+      findsOneWidget,
+    );
+    await tester.fling(find.byType(PageView), const Offset(-650, 0), 1000);
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Plot twist: you are actually making progress.'),
+      findsOneWidget,
+    );
+
+    planner.startTimer(task);
+    await tester.pump();
+    final startingSeconds = task.secondsLeft;
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(seconds: 2)),
+    );
+    await tester.pump(const Duration(seconds: 1));
+    expect(task.secondsLeft, lessThan(startingSeconds));
+    planner.pauseTimer(task);
+    final pausedSeconds = task.secondsLeft;
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(seconds: 1)),
+    );
+    expect(task.secondsLeft, pausedSeconds);
+    planner.finishTask(task);
+    expect(task.isDone, isTrue);
+    expect(task.secondsLeft, 0);
+
+    await tester.pumpWidget(const SizedBox());
+    planner.dispose();
   });
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -22,13 +23,26 @@ class StudyTask {
     required this.subject,
     required this.minutes,
     this.isDone = false,
-  });
+    int? remainingSeconds,
+    this.endsAt,
+  }) : remainingSeconds = remainingSeconds ?? minutes * 60;
 
   final String id;
   final String title;
   final Subject subject;
   final int minutes;
   bool isDone;
+  int remainingSeconds;
+  DateTime? endsAt;
+
+  int get secondsLeft {
+    if (endsAt == null) return remainingSeconds;
+    final milliseconds = endsAt!.difference(DateTime.now()).inMilliseconds;
+    if (milliseconds <= 0) return 0;
+    return (milliseconds / 1000).ceil();
+  }
+
+  bool get isRunning => endsAt != null && secondsLeft > 0;
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -36,6 +50,8 @@ class StudyTask {
     'subject': subject.name,
     'minutes': minutes,
     'isDone': isDone,
+    'remainingSeconds': remainingSeconds,
+    'endsAt': endsAt?.toIso8601String(),
   };
 
   factory StudyTask.fromJson(Map<String, dynamic> json) => StudyTask(
@@ -44,6 +60,10 @@ class StudyTask {
     subject: Subject.values.byName(json['subject'] as String),
     minutes: json['minutes'] as int,
     isDone: json['isDone'] as bool,
+    remainingSeconds: json['remainingSeconds'] as int?,
+    endsAt: json['endsAt'] == null
+        ? null
+        : DateTime.tryParse(json['endsAt'] as String),
   );
 }
 
@@ -52,6 +72,7 @@ class Planner extends ChangeNotifier {
   final List<StudyTask> tasks = [];
   final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
   Future<void> _pendingSave = Future.value();
+  Timer? _ticker;
 
   int get completedCount => tasks.where((task) => task.isDone).length;
   int get plannedMinutes => tasks.fold(0, (sum, task) => sum + task.minutes);
@@ -75,6 +96,8 @@ class Planner extends ChangeNotifier {
     } catch (_) {
       tasks.clear();
     }
+    _finishExpiredTimers();
+    _startTickerIfNeeded();
     notifyListeners();
   }
 
@@ -93,14 +116,82 @@ class Planner extends ChangeNotifier {
 
   void toggleTask(StudyTask task) {
     task.isDone = !task.isDone;
+    task.endsAt = null;
+    task.remainingSeconds = task.isDone ? 0 : task.minutes * 60;
+    _stopTickerIfIdle();
+    notifyListeners();
+    _save();
+  }
+
+  void startTimer(StudyTask task) {
+    if (task.isDone || task.isRunning) return;
+    if (task.remainingSeconds == 0) task.remainingSeconds = task.minutes * 60;
+    task.endsAt = DateTime.now().toUtc().add(
+      Duration(seconds: task.remainingSeconds),
+    );
+    _startTickerIfNeeded();
+    notifyListeners();
+    _save();
+  }
+
+  void pauseTimer(StudyTask task) {
+    if (task.endsAt == null) return;
+    task.remainingSeconds = task.secondsLeft;
+    task.endsAt = null;
+    _stopTickerIfIdle();
+    notifyListeners();
+    _save();
+  }
+
+  void resetTimer(StudyTask task) {
+    task.endsAt = null;
+    task.remainingSeconds = task.minutes * 60;
+    _stopTickerIfIdle();
+    notifyListeners();
+    _save();
+  }
+
+  void finishTask(StudyTask task) {
+    task.endsAt = null;
+    task.remainingSeconds = 0;
+    task.isDone = true;
+    _stopTickerIfIdle();
     notifyListeners();
     _save();
   }
 
   void deleteTask(StudyTask task) {
     tasks.remove(task);
+    _stopTickerIfIdle();
     notifyListeners();
     _save();
+  }
+
+  void _finishExpiredTimers() {
+    var changed = false;
+    for (final task in tasks) {
+      if (task.endsAt != null && task.secondsLeft == 0) {
+        task.endsAt = null;
+        task.remainingSeconds = 0;
+        changed = true;
+      }
+    }
+    if (changed) _save();
+  }
+
+  void _startTickerIfNeeded() {
+    if (_ticker != null || !tasks.any((task) => task.endsAt != null)) return;
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      _finishExpiredTimers();
+      _stopTickerIfIdle();
+      notifyListeners();
+    });
+  }
+
+  void _stopTickerIfIdle() {
+    if (tasks.any((task) => task.endsAt != null)) return;
+    _ticker?.cancel();
+    _ticker = null;
   }
 
   void _save() {
@@ -108,5 +199,11 @@ class Planner extends ChangeNotifier {
     _pendingSave = _pendingSave.then(
       (_) => _preferences.setString('aster_tasks', snapshot),
     );
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
   }
 }

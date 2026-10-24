@@ -1,11 +1,11 @@
 {
-    "name": "Aster Study",
-    "short_name": "Aster",
+    "name": "Study Buddy",
+    "short_name": "Buddy",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#F5F7F4",
     "theme_color": "#117C78",
-    "description": "Plan study tasks and track your progress.",
+    "description": "Plan tasks, focus with a timer, and track progress.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
