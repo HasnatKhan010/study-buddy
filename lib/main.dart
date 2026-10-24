@@ -146,18 +146,9 @@ class BrandHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      Container(
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(
-          color: teal,
-          borderRadius: BorderRadius.circular(13),
-        ),
-        child: const Icon(
-          Icons.wb_sunny_rounded,
-          color: Colors.white,
-          size: 22,
-        ),
+      ClipRRect(
+        borderRadius: BorderRadius.circular(13),
+        child: Image.asset('assets/aster_mark.png', width: 38, height: 38),
       ),
       const SizedBox(width: 10),
       const Text(
@@ -279,9 +270,12 @@ class TaskCard extends StatelessWidget {
   final StudyTask task;
   final Planner planner;
   @override
-  Widget build(BuildContext context) => Material(
+  Widget build(BuildContext context) => Card(
     color: Colors.white,
-    borderRadius: BorderRadius.circular(20),
+    elevation: 0,
+    margin: EdgeInsets.zero,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    clipBehavior: Clip.antiAlias,
     child: InkWell(
       borderRadius: BorderRadius.circular(20),
       onTap: () => Navigator.push(

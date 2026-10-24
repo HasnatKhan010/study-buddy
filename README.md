@@ -31,6 +31,7 @@ Pushes to `main` automatically run the tests and publish the web app to GitHub P
 | `BottomNavigationBar`, `Icon` | Three main destinations and recognizable actions |
 | Dart logic | Validation, search/filter, task counts, and progress calculations |
 | `Container`, `Row`, `Column`, `GridView` | Dashboard card, task rows, detail layout, and focus-area grid |
+| `Image.asset`, `Card` | Aster brand image in the header and real task cards |
 | Basic routing | Add-task, subject-detail, and task-detail pages |
 | `StatefulWidget`, `StatelessWidget` | Form and selected-tab state; reusable display widgets |
 

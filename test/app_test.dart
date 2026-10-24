@@ -20,6 +20,7 @@ void main() {
     expect(tester.takeException(), isNull, reason: 'Plan screen must fit');
 
     expect(find.text('Make today count.'), findsOneWidget);
+    expect(find.byType(Image), findsWidgets);
     await tester.tap(find.text('Subjects'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull, reason: 'Subjects screen must fit');
@@ -39,5 +40,21 @@ void main() {
       findsOneWidget,
     );
     expect(planner.tasks, isEmpty);
+
+    await tester.enterText(find.byType(TextField).last, '30');
+    await tester.ensureVisible(find.text('Add to my plan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add to my plan'));
+    await tester.pumpAndSettle();
+    expect(planner.tasks.length, 1);
+    await tester.tap(find.text('Plan'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Read chapter 4'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Read chapter 4'), findsOneWidget);
+    expect(find.byType(Card), findsWidgets);
   });
 }
