@@ -1,5 +1,7 @@
 # Aster Study
 
+[Live web app](https://hasnatkhan010.github.io/aster-study/)
+
 A small, complete Flutter study planner. Create study tasks, choose a focus area and estimated time, mark tasks complete, search and filter the plan, and review progress. Tasks are saved locally on the device. No account or internet connection is needed.
 
 ## Run
@@ -10,6 +12,8 @@ flutter run -d chrome
 ```
 
 For Android, install and configure the Android SDK, then use `flutter run -d <device-id>`.
+
+Pushes to `main` automatically run the tests and publish the web app to GitHub Pages.
 
 ## How it works
 
