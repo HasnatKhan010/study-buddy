@@ -17,10 +17,14 @@ Pushes to `main` automatically run the tests and publish the web app to GitHub P
 
 ## How it works
 
-- `lib/planner.dart` contains the `StudyTask` model, countdown state, the four focus areas, progress calculations, and local JSON saving through `shared_preferences`.
-- `lib/main.dart` contains the theme and screens. `Planner` is a `ChangeNotifier`, so an `AnimatedBuilder` redraws a screen when tasks change.
-- `lib/quote_carousel.dart` contains a swipeable `PageView` and a 10-second `Timer`.
-- The bottom bar switches between Plan, Subjects, and Progress. `Navigator.push` opens the add-task, subject-detail, and task-detail screens.
+- `lib/main.dart` starts the app and loads saved tasks.
+- `lib/app.dart` holds `MaterialApp`, the theme, the main `AppBar`, and the bottom navigation bar.
+- `lib/app_colors.dart` holds the shared colors.
+- `lib/planner.dart` holds task data, timer logic, progress calculations, and local saving.
+- `lib/screens/` has one file per main screen or related detail screen: Plan, Subjects, Progress, New task, and Task details.
+- `lib/widgets/` holds cards reused by the screens. `lib/quote_carousel.dart` holds the swipeable quotes and their 10-second timer.
+- `lib/timer_text.dart` formats the countdown. `Planner` is a `ChangeNotifier`, so `AnimatedBuilder` updates the screens when tasks change.
+- The `AppBar` shows the app name on the main tabs; detail pages use it for a title and back button. The bottom bar switches main tabs. `Navigator.push` opens detail screens.
 
 ## Lab concepts used in the actual app
 
@@ -29,7 +33,7 @@ Pushes to `main` automatically run the tests and publish the web app to GitHub P
 | `TextField` | Task title, timer minutes, and live search |
 | `ElevatedButton` | Submit a new task and complete a task |
 | `TextStyle`, `TextTheme`, `ThemeData` | Consistent typography, teal colors, inputs, and buttons |
-| `BottomNavigationBar`, `Icon` | Three main destinations and recognizable actions |
+| `AppBar`, `BottomNavigationBar`, `Icon` | App identity, back navigation, three main destinations, and recognizable actions |
 | Dart logic | Validation, search/filter, task counts, countdown, and progress calculations |
 | `Container`, `Row`, `Column`, `GridView` | Dashboard card, task rows, detail layout, and focus-area grid |
 | `Image.asset`, `Card` | Study Buddy logo in the header and real task cards |

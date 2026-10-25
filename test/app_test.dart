@@ -1,4 +1,4 @@
-import 'package:study_buddy/main.dart';
+import 'package:study_buddy/app.dart';
 import 'package:study_buddy/planner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,11 +19,14 @@ void main() {
     await tester.pumpWidget(StudyBuddyApp(planner: planner));
     expect(tester.takeException(), isNull, reason: 'Plan screen must fit');
 
+    expect(find.byType(AppBar), findsOneWidget);
+    expect(find.text('Study Buddy'), findsOneWidget);
     expect(find.text('Make today count.'), findsOneWidget);
     expect(find.byType(Image), findsWidgets);
     await tester.tap(find.text('Subjects'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull, reason: 'Subjects screen must fit');
+    expect(find.text('Study Buddy'), findsOneWidget);
     expect(find.text('Study by subject.'), findsOneWidget);
 
     await tester.tap(find.text('New task'));
