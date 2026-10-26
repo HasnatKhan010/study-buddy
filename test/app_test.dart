@@ -6,6 +6,37 @@ import 'package:shared_preferences_platform_interface/in_memory_shared_preferenc
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 void main() {
+  test('editing and timer expiry keep one accurate focus session', () {
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty();
+    final planner = Planner();
+    planner.addTask('Draft notes', Subject.writing, 20);
+    final task = planner.tasks.single;
+    final dueDate = DateTime(2026, 11, 1);
+
+    planner.updateTask(
+      task,
+      'Review notes',
+      Subject.revision,
+      25,
+      notes: 'Focus on chapter three',
+      dueDate: dueDate,
+    );
+    expect(task.title, 'Review notes');
+    expect(task.notes, 'Focus on chapter three');
+    expect(task.dueDate, dueDate);
+    expect(task.remainingSeconds, 25 * 60);
+
+    task.endsAt = DateTime.now().subtract(const Duration(seconds: 1));
+    planner.checkTimers();
+    expect(planner.sessions.length, 1);
+    expect(planner.sessions.single.seconds, 25 * 60);
+    expect(planner.takeAlert(), contains('Review notes'));
+    planner.finishTask(task);
+    expect(planner.sessions.length, 1);
+    planner.dispose();
+  });
+
   testWidgets('navigation and task form validation work', (tester) async {
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
@@ -34,8 +65,12 @@ void main() {
     expect(tester.takeException(), isNull, reason: 'Add task screen must fit');
     expect(find.text('Plan a small win.'), findsOneWidget);
     await tester.enterText(find.byType(TextField).first, 'Read chapter 4');
-    await tester.enterText(find.byType(TextField).last, '0');
-    await tester.ensureVisible(find.text('Add to my plan'));
+    await tester.enterText(find.byType(TextField).at(1), '0');
+    await tester.scrollUntilVisible(
+      find.text('Add to my plan'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.text('Add to my plan'));
     await tester.pump();
     expect(
@@ -44,7 +79,7 @@ void main() {
     );
     expect(planner.tasks, isEmpty);
 
-    await tester.enterText(find.byType(TextField).last, '30');
+    await tester.enterText(find.byType(TextField).at(1), '30');
     await tester.ensureVisible(find.text('Add to my plan'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Add to my plan'));

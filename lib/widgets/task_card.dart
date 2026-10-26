@@ -60,6 +60,15 @@ class TaskCard extends StatelessWidget {
                     '${task.subject.label}  ·  ${task.minutes} min',
                     style: const TextStyle(fontSize: 12, color: muted),
                   ),
+                  if (task.dueDate != null)
+                    Text(
+                      'Due ${MaterialLocalizations.of(context).formatMediumDate(task.dueDate!)}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: teal,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   if (!task.isDone &&
                       (task.endsAt != null ||
                           task.remainingSeconds != task.minutes * 60))

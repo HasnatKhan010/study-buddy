@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
+import 'focus_chime.dart';
 import 'planner.dart';
 import 'screens/add_task_page.dart';
 import 'screens/progress_page.dart';
@@ -87,8 +90,60 @@ class HomeShell extends StatefulWidget {
   State<HomeShell> createState() => _HomeShellState();
 }
 
-class _HomeShellState extends State<HomeShell> {
+class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   int selectedTab = 0;
+  final FocusChime chime = FocusChime();
+  bool alertScheduled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    widget.planner.addListener(showPendingAlerts);
+    WidgetsBinding.instance.addPostFrameCallback((_) => showPendingAlerts());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) widget.planner.checkTimers();
+  }
+
+  void showPendingAlerts() {
+    if (!widget.planner.hasAlerts || alertScheduled || !mounted) return;
+    alertScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      alertScheduled = false;
+      if (!mounted) return;
+      var playedSound = false;
+      String? message;
+      while ((message = widget.planner.takeAlert()) != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message!),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 8),
+            action: SnackBarAction(
+              label: 'Got it',
+              onPressed: () =>
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+            ),
+          ),
+        );
+        if (widget.planner.soundEnabled && !playedSound) {
+          unawaited(chime.play());
+          playedSound = true;
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    widget.planner.removeListener(showPendingAlerts);
+    chime.dispose();
+    super.dispose();
+  }
 
   void openAddTask() => Navigator.push(
     context,
@@ -100,7 +155,10 @@ class _HomeShellState extends State<HomeShell> {
     final pages = [
       TodayPage(planner: widget.planner, onAdd: openAddTask),
       SubjectsPage(planner: widget.planner),
-      ProgressPage(planner: widget.planner),
+      ProgressPage(
+        planner: widget.planner,
+        onTestSound: () => unawaited(chime.play()),
+      ),
     ];
     return Scaffold(
       appBar: AppBar(title: const AppBrand()),

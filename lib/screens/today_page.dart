@@ -37,9 +37,21 @@ class _TodayPageState extends State<TodayPage> {
         final matchesFilter =
             filter == 'All' ||
             (filter == 'To do' && !task.isDone) ||
-            (filter == 'Done' && task.isDone);
+            (filter == 'Done' && task.isDone) ||
+            (filter == 'Due soon' &&
+                !task.isDone &&
+                task.dueDate != null &&
+                task.dueDate!.isBefore(
+                  DateTime.now().add(const Duration(days: 8)),
+                ));
         return matchesSearch && matchesFilter;
       }).toList();
+      visible.sort((a, b) {
+        if (a.isDone != b.isDone) return a.isDone ? 1 : -1;
+        if (a.dueDate == null) return b.dueDate == null ? 0 : 1;
+        if (b.dueDate == null) return -1;
+        return a.dueDate!.compareTo(b.dueDate!);
+      });
       return ListView(
         padding: const EdgeInsets.fromLTRB(24, 28, 24, 110),
         children: [
@@ -83,7 +95,7 @@ class _TodayPageState extends State<TodayPage> {
           const SizedBox(height: 14),
           Wrap(
             spacing: 8,
-            children: ['All', 'To do', 'Done']
+            children: ['All', 'To do', 'Due soon', 'Done']
                 .map(
                   (option) => ChoiceChip(
                     label: Text(option),

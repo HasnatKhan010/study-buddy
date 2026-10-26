@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_colors.dart';
 import '../planner.dart';
 import '../timer_text.dart';
+import 'add_task_page.dart';
 
 class TaskTimerCard extends StatelessWidget {
   const TaskTimerCard({super.key, required this.task, required this.planner});
@@ -135,7 +136,21 @@ class TaskDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: planner,
     builder: (context, _) => Scaffold(
-      appBar: AppBar(title: const Text('Task details')),
+      appBar: AppBar(
+        title: const Text('Task details'),
+        actions: [
+          IconButton(
+            tooltip: 'Edit task',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => AddTaskPage(planner: planner, task: task),
+              ),
+            ),
+            icon: const Icon(Icons.edit_outlined),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 30),
@@ -178,9 +193,43 @@ class TaskDetailsPage extends StatelessWidget {
                     label: 'Status',
                     value: task.isDone ? 'Completed' : 'To do',
                   ),
+                  if (task.dueDate != null) ...[
+                    const Divider(height: 28),
+                    DetailRow(
+                      icon: Icons.calendar_today_outlined,
+                      label: 'Due',
+                      value: MaterialLocalizations.of(context)
+                          .formatMediumDate(task.dueDate!),
+                    ),
+                  ],
                 ],
               ),
             ),
+            if (task.notes.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'NOTES',
+                      style: TextStyle(
+                        color: teal,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(task.notes),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 14),
             TaskTimerCard(task: task, planner: planner),
             const SizedBox(height: 28),
