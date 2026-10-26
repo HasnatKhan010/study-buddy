@@ -2,7 +2,13 @@
 
 [Live web app](https://hasnatkhan010.github.io/study-buddy/)
 
-A small Flutter study planner. Create tasks with a focus timer length, start or pause a live countdown, finish tasks, search and filter the plan, and review progress. Swipe through funny motivational quotes or let them advance every 10 seconds. Tasks and timer deadlines are saved locally. No account or internet connection is needed.
+A small Flutter study planner. Create tasks with a focus timer length, start or pause a live countdown, finish tasks, search and filter the plan, and review progress. Swipe through funny motivational quotes or let them advance every 10 seconds. Tasks and timer deadlines are saved locally. No account is needed.
+
+## Install on iPhone now
+
+Open the [live app](https://hasnatkhan010.github.io/study-buddy/) in Safari on the iPhone. Tap Share, choose **Add to Home Screen**, enable **Open as Web App** if shown, then tap **Add**. The Study Buddy icon opens the Flutter web app from the Home Screen. Keep an internet connection available when opening it; this site does not include offline caching.
+
+This Home Screen installation is a web app. Building a native iOS `.ipa` from Flutter also requires macOS, Xcode, and Apple signing.
 
 ## Run
 
